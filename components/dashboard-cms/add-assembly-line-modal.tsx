@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Wifi, CheckCircle, AlertCircle } from "lucide-react"
+import { Wifi, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 
 interface Sensor {
   id: string
@@ -49,22 +49,22 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
           },
           {
             id: "sensor-002",
-            name: "Pressure Sensor B2",
-            type: "Pressure Monitor",
+            name: "Industrial Sensor A2",
+            type: "Amp Monitor",
             signalStrength: 72,
             status: "available",
           },
           {
             id: "sensor-003",
-            name: "Temperature Sensor C3",
-            type: "Temp Monitor",
+            name: "Industrial Sensor A3",
+            type: "Amp Monitor",
             signalStrength: 91,
             status: "available",
           },
           {
             id: "sensor-004",
-            name: "Vibration Sensor D4",
-            type: "Vibration Monitor",
+            name: "Industrial Sensor A4",
+            type: "Amp Monitor",
             signalStrength: 68,
             status: "connected",
           },
@@ -130,7 +130,7 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
 
         {step === "scanning" && (
           <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <h3 className="text-lg font-semibold mb-2">Scanning WiFi Network</h3>
             <p className="text-sm text-muted-foreground text-center">
               Searching for available sensors on the network...

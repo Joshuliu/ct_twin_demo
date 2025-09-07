@@ -7,6 +7,8 @@ import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { ThemeCustomizer } from "../theme-customizer"
 
+import "../../app/globals.css";
+
 interface LayoutProps {
   children: ReactNode
 }

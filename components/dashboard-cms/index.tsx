@@ -65,39 +65,6 @@ export default function CMSDashboardContent() {
         <ERPWebsocketLog />
       </div>
 
-      {/* Original CMS Content - keeping for reference */}
-      <div className="border-t pt-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">CMS Content Management</h2>
-
-        {/* Overview Stats */}
-        <OverviewStats />
-
-        {/* Content Chart */}
-        <ContentChart />
-
-        {/* User Activity & System History Row */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-          <SystemHistory />
-          <UserActivity />
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-          {/* Left Column - 2/3 width on desktop */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6 w-full min-w-0">
-            <RecentPosts />
-            <PopularArticles />
-            <PublishingSchedule />
-          </div>
-
-          {/* Right Column - 1/3 width on desktop */}
-          <div className="space-y-4 sm:space-y-6 w-full min-w-0">
-            <ContentCategories />
-            <RecentComments />
-          </div>
-        </div>
-      </div>
-
       <AddAssemblyLineModal open={isModalOpen} onOpenChange={setIsModalOpen} onCreateMachine={handleCreateMachine} />
     </div>
   )
