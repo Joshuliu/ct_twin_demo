@@ -10,8 +10,8 @@ interface MachineStatus {
   name: string
   status: "running" | "idle" | "maintenance" | "error"
   amperage: number
-  temperature: number
   uptime: number
+  voltage: number
   type?: string
   location?: string
 }
@@ -22,10 +22,10 @@ interface MachineStatusProps {
 
 export default function MachineStatus({ newMachines = [] }: MachineStatusProps) {
   const [machines, setMachines] = useState<MachineStatus[]>([
-    { id: "M001", name: "Production Line A", status: "running", amperage: 45.2, temperature: 68, uptime: 98.5 },
-    { id: "M002", name: "Assembly Unit B", status: "idle", amperage: 12.1, temperature: 72, uptime: 95.2 },
-    { id: "M003", name: "Quality Control C", status: "running", amperage: 38.7, temperature: 65, uptime: 99.1 },
-    { id: "M004", name: "Packaging Line D", status: "maintenance", amperage: 0, temperature: 70, uptime: 87.3 },
+    { id: "M001", name: "Production Line A", status: "running", amperage: 45.2, uptime: 98.5, voltage: 230 },
+    { id: "M002", name: "Assembly Unit B", status: "idle", amperage: 12.1, uptime: 95.2, voltage: 230 },
+    { id: "M003", name: "Quality Control C", status: "running", amperage: 38.7, uptime: 99.1, voltage: 230 },
+    { id: "M004", name: "Packaging Line D", status: "maintenance", amperage: 0, uptime: 87.3, voltage: 230 },
   ])
 
   const [selectedMachine, setSelectedMachine] = useState<MachineStatus | null>(null)
@@ -38,8 +38,8 @@ export default function MachineStatus({ newMachines = [] }: MachineStatusProps) 
         name: machine.name,
         status: machine.status as "running" | "idle" | "maintenance" | "error",
         amperage: machine.ampReading || Math.floor(Math.random() * 50) + 10,
-        temperature: Math.floor(Math.random() * 20) + 60,
         uptime: Math.floor(Math.random() * 10) + 90,
+        voltage: machine.voltage || 230, // default to 230V if not provided
         type: machine.type,
         location: machine.location,
       }))
@@ -59,7 +59,6 @@ export default function MachineStatus({ newMachines = [] }: MachineStatusProps) 
           ...machine,
           amperage:
             machine.status === "running" ? Math.max(0, machine.amperage + (Math.random() - 0.5) * 5) : machine.amperage,
-          temperature: machine.temperature + (Math.random() - 0.5) * 2,
         })),
       )
     }, 2000)
@@ -70,21 +69,6 @@ export default function MachineStatus({ newMachines = [] }: MachineStatusProps) 
   const handleMachineClick = (machine: MachineStatus) => {
     setSelectedMachine(machine)
     setIsModalOpen(true)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "running":
-        return "bg-green-500"
-      case "idle":
-        return "bg-yellow-500"
-      case "maintenance":
-        return "bg-blue-500"
-      case "error":
-        return "bg-red-500"
-      default:
-        return "bg-gray-500"
-    }
   }
 
   const getStatusVariant = (status: string) => {
@@ -137,8 +121,10 @@ export default function MachineStatus({ newMachines = [] }: MachineStatusProps) 
                     <p className="font-mono font-medium">{machine.amperage.toFixed(1)}A</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Temp</p>
-                    <p className="font-mono font-medium">{machine.temperature.toFixed(1)}°F</p>
+                    <p className="text-muted-foreground">Power</p>
+                    <p className="font-mono font-medium">
+                      {(machine.amperage * machine.voltage / 1000).toFixed(0)}kWh
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Uptime</p>

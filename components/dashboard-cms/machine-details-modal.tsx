@@ -19,7 +19,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { AlertTriangle, Wrench, TrendingUp, Zap, Thermometer, Activity } from "lucide-react"
+import { AlertTriangle, Wrench, TrendingUp, Zap, Activity, Gauge } from "lucide-react"
 
 interface MachineDetailsModalProps {
   machine: any
@@ -30,7 +30,23 @@ interface MachineDetailsModalProps {
 export default function MachineDetailsModal({ machine, isOpen, onClose }: MachineDetailsModalProps) {
   if (!machine) return null
 
-  // Mock data for charts and metrics
+  // Derivations from amperage (assumes single-phase or treating as a simple approximation)
+  const voltage: number = machine.voltage ?? 230 // default if not provided
+  const ratedAmps: number = machine.threshold ?? 50 // fallback for Load% calc
+  const powerKW = (machine.amperage * voltage) / 1000
+  const loadPct = Math.min(100, (machine.amperage / ratedAmps) * 100)
+
+  // Mock data — convert previous "temperature" timeline into Power/Load trends
+  const powerData = [
+    { time: "00:00", amps: Math.max(0, machine.amperage - 6), power: Math.max(0, (machine.amperage - 6) * voltage / 1000), load: Math.max(0, ((machine.amperage - 6) / ratedAmps) * 100) },
+    { time: "04:00", amps: Math.max(0, machine.amperage - 2), power: Math.max(0, (machine.amperage - 2) * voltage / 1000), load: Math.max(0, ((machine.amperage - 2) / ratedAmps) * 100) },
+    { time: "08:00", amps: Math.max(0, machine.amperage + 4), power: Math.max(0, (machine.amperage + 4) * voltage / 1000), load: Math.max(0, ((machine.amperage + 4) / ratedAmps) * 100) },
+    { time: "12:00", amps: Math.max(0, machine.amperage + 1), power: Math.max(0, (machine.amperage + 1) * voltage / 1000), load: Math.max(0, ((machine.amperage + 1) / ratedAmps) * 100) },
+    { time: "16:00", amps: Math.max(0, machine.amperage - 3), power: Math.max(0, (machine.amperage - 3) * voltage / 1000), load: Math.max(0, ((machine.amperage - 3) / ratedAmps) * 100) },
+    { time: "20:00", amps: Math.max(0, machine.amperage + 2), power: Math.max(0, (machine.amperage + 2) * voltage / 1000), load: Math.max(0, ((machine.amperage + 2) / ratedAmps) * 100) },
+  ]
+
+  // Keep other mock sections
   const productionData = [
     { time: "00:00", output: 85, target: 100 },
     { time: "04:00", output: 92, target: 100 },
@@ -38,15 +54,6 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
     { time: "12:00", output: 95, target: 100 },
     { time: "16:00", output: 88, target: 100 },
     { time: "20:00", output: 91, target: 100 },
-  ]
-
-  const temperatureData = [
-    { time: "00:00", temp: 68, vibration: 2.1 },
-    { time: "04:00", temp: 72, vibration: 2.3 },
-    { time: "08:00", temp: 75, vibration: 2.8 },
-    { time: "12:00", temp: 73, vibration: 2.5 },
-    { time: "16:00", temp: 71, vibration: 2.2 },
-    { time: "20:00", temp: 69, vibration: 2.0 },
   ]
 
   const maintenanceHistory = [
@@ -89,7 +96,7 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${getStatusColor(machine.status)} animate-pulse`}></div>
+            <div className={`w-3 h-3 rounded-full ${getStatusColor(machine.status)} animate-pulse`} />
             {machine.name} - Detailed Metrics
             <Badge variant={machine.status === "running" ? "default" : "secondary"}>
               {machine.status.toUpperCase()}
@@ -98,14 +105,13 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="production">Production</TabsTrigger>
-            <TabsTrigger value="sensors">Sensors</TabsTrigger>
-            <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+            <TabsTrigger value="power">Power</TabsTrigger>
             <TabsTrigger value="alerts">Alerts</TabsTrigger>
           </TabsList>
 
+          {/* -------- Overview -------- */}
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
@@ -132,25 +138,25 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Energy Usage</CardTitle>
+                  <CardTitle className="text-sm font-medium">Electrical</CardTitle>
                   <Zap className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{machine.amperage.toFixed(1)}A</div>
                   <p className="text-xs text-muted-foreground">
-                    Power: {((machine.amperage * 240) / 1000).toFixed(1)}kW
+                    Power: {powerKW.toFixed(2)} kW • Load: {loadPct.toFixed(0)}%
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Temperature</CardTitle>
-                  <Thermometer className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Uptime</CardTitle>
+                  <Gauge className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{machine.temperature.toFixed(1)}°F</div>
-                  <p className="text-xs text-muted-foreground">Normal range: 65-75°F</p>
+                  <div className="text-2xl font-bold">{(machine.uptime ?? 95).toFixed(1)}%</div>
+                  <Progress value={machine.uptime ?? 95} className="mt-2" />
                 </CardContent>
               </Card>
             </div>
@@ -171,6 +177,7 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
             </div>
           </TabsContent>
 
+          {/* -------- Production -------- */}
           <TabsContent value="production" className="space-y-4">
             <Card>
               <CardHeader>
@@ -240,21 +247,23 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
             </div>
           </TabsContent>
 
-          <TabsContent value="sensors" className="space-y-4">
+          {/* -------- Power (replaces Sensors tab) -------- */}
+          <TabsContent value="power" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Temperature & Vibration Trends</CardTitle>
+                <CardTitle>Power & Load Trends</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={temperatureData}>
+                  <LineChart data={powerData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="time" />
-                    <YAxis yAxisId="temp" orientation="left" />
-                    <YAxis yAxisId="vibration" orientation="right" />
+                    <YAxis yAxisId="left" orientation="left" label={{ value: "kW / %", angle: -90, position: "insideLeft" }} />
+                    <YAxis yAxisId="right" orientation="right" label={{ value: "Amps", angle: 90, position: "insideRight" }} />
                     <Tooltip />
-                    <Line yAxisId="temp" type="monotone" dataKey="temp" stroke="#ef4444" strokeWidth={2} />
-                    <Line yAxisId="vibration" type="monotone" dataKey="vibration" stroke="#8b5cf6" strokeWidth={2} />
+                    <Line yAxisId="left" type="monotone" dataKey="power" name="Power (kW)" stroke="#10b981" strokeWidth={2} />
+                    <Line yAxisId="left" type="monotone" dataKey="load" name="Load (%)" stroke="#8b5cf6" strokeWidth={2} />
+                    <Line yAxisId="right" type="monotone" dataKey="amps" name="Amps (A)" stroke="#3b82f6" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -263,24 +272,24 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
             <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Current Readings</CardTitle>
+                  <CardTitle className="text-sm">Current Electrical</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
-                    <span>Temperature:</span>
-                    <span className="font-mono">{machine.temperature.toFixed(1)}°F</span>
+                    <span>Amperage:</span>
+                    <span className="font-mono">{machine.amperage.toFixed(1)} A</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Vibration:</span>
-                    <span className="font-mono">2.3 mm/s</span>
+                    <span>Voltage (assumed):</span>
+                    <span className="font-mono">{voltage} V</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Pressure:</span>
-                    <span className="font-mono">45.2 PSI</span>
+                    <span>Power:</span>
+                    <span className="font-mono">{powerKW.toFixed(2)} kW</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>RPM:</span>
-                    <span className="font-mono">1,847</span>
+                    <span>Load (vs {ratedAmps}A):</span>
+                    <span className="font-mono">{loadPct.toFixed(0)}%</span>
                   </div>
                 </CardContent>
               </Card>
@@ -291,20 +300,16 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span>Temperature Sensor:</span>
+                    <span>Amp Sensor:</span>
                     <Badge variant="default">Online</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>Vibration Sensor:</span>
-                    <Badge variant="default">Online</Badge>
+                    <span>Derived Power:</span>
+                    <Badge variant="secondary">OK</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>Pressure Sensor:</span>
-                    <Badge variant="default">Online</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Speed Sensor:</span>
-                    <Badge variant="secondary">Calibrating</Badge>
+                    <span>Voltage Source:</span>
+                    <Badge variant="outline">{machine.voltage ? "Measured" : "Assumed"}</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -316,23 +321,27 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
                 <CardContent className="space-y-2">
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span>Temp Warning:</span>
-                      <span>75°F</span>
+                      <span>Amp Warning ({ratedAmps}A):</span>
+                      <span>{machine.amperage.toFixed(1)}A</span>
                     </div>
-                    <Progress value={(machine.temperature / 75) * 100} className="h-2" />
+                    <Progress value={Math.min(100, (machine.amperage / ratedAmps) * 100)} className="h-2" />
                   </div>
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span>Vibration Limit:</span>
-                      <span>5.0 mm/s</span>
+                      <span>Power Ceiling (kW):</span>
+                      <span>{((ratedAmps * voltage) / 1000).toFixed(1)} kW</span>
                     </div>
-                    <Progress value={(2.3 / 5.0) * 100} className="h-2" />
+                    <Progress
+                      value={Math.min(100, (powerKW / ((ratedAmps * voltage) / 1000)) * 100)}
+                      className="h-2"
+                    />
                   </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
+          {/* -------- Maintenance -------- */}
           <TabsContent value="maintenance" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
@@ -418,6 +427,7 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
             </Card>
           </TabsContent>
 
+          {/* -------- Alerts -------- */}
           <TabsContent value="alerts" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
@@ -432,7 +442,6 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
-                        fill="#8884d8"
                         dataKey="count"
                         label={({ type, count }) => `${type}: ${count}`}
                       >
@@ -455,7 +464,7 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
                     <div className="flex items-center gap-3 p-2 border rounded">
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                       <div className="flex-1">
-                        <p className="font-medium">High Temperature</p>
+                        <p className="font-medium">Overcurrent / High Load</p>
                         <p className="text-sm text-muted-foreground">2 hours ago</p>
                       </div>
                       <Badge variant="destructive">Critical</Badge>
@@ -463,7 +472,7 @@ export default function MachineDetailsModal({ machine, isOpen, onClose }: Machin
                     <div className="flex items-center gap-3 p-2 border rounded">
                       <AlertTriangle className="h-4 w-4 text-yellow-500" />
                       <div className="flex-1">
-                        <p className="font-medium">Vibration Spike</p>
+                        <p className="font-medium">Power Spike Detected</p>
                         <p className="text-sm text-muted-foreground">4 hours ago</p>
                       </div>
                       <Badge variant="secondary">Warning</Badge>
