@@ -17,4 +17,7 @@ venv/
 # Misc
 .DS_Store
 .env*
-EOF
+EOF.next/
+dist/
+out/
+node_modules/
