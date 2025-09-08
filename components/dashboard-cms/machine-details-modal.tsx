@@ -195,6 +195,21 @@ export default function MachineDetailsModal({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
+                    Last Uptime
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">27h</div>
+                  <p className="text-xs text-muted-foreground">
+                    Last downtime: 23:22
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
                     Electrical
                   </CardTitle>
                   <Zap className="h-4 w-4 text-muted-foreground" />
