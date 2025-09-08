@@ -1,5 +1,20 @@
+# Node
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+dist/
+**/dist/
+out/
+**/out/
+
+# Python
+.venv/
 venv/
-__pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
+
+# Misc
 .DS_Store
-node_modules
+.env*
+EOF
