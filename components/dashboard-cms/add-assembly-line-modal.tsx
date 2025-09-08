@@ -1,39 +1,56 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Wifi, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Wifi, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface Sensor {
-  id: string
-  name: string
-  type: string
-  signalStrength: number
-  status: "available" | "connected" | "error"
+  id: string;
+  name: string;
+  type: string;
+  signalStrength: number;
+  status: "available" | "connected" | "error";
 }
 
 interface AddAssemblyLineModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onCreateMachine: (machineData: any) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreateMachine: (machineData: any) => void;
 }
 
-export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachine }: AddAssemblyLineModalProps) {
-  const [step, setStep] = useState<"scanning" | "discovered" | "configure">("scanning")
-  const [sensors, setSensors] = useState<Sensor[]>([])
-  const [selectedSensor, setSelectedSensor] = useState<Sensor | null>(null)
+export default function AddAssemblyLineModal({
+  open,
+  onOpenChange,
+  onCreateMachine,
+}: AddAssemblyLineModalProps) {
+  const [step, setStep] = useState<"scanning" | "discovered" | "configure">(
+    "scanning"
+  );
+  const [sensors, setSensors] = useState<Sensor[]>([]);
+  const [selectedSensor, setSelectedSensor] = useState<Sensor | null>(null);
   const [machineConfig, setMachineConfig] = useState({
     name: "",
     type: "",
     location: "",
     ampThreshold: "",
     description: "",
-  })
+  });
 
   // Mock sensor discovery
   useEffect(() => {
@@ -68,20 +85,20 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
             signalStrength: 68,
             status: "connected",
           },
-        ])
-        setStep("discovered")
-      }, 3000)
+        ]);
+        setStep("discovered");
+      }, 3000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [open, step])
+  }, [open, step]);
 
   const handleSensorSelect = (sensor: Sensor) => {
     if (sensor.status === "available") {
-      setSelectedSensor(sensor)
-      setStep("configure")
+      setSelectedSensor(sensor);
+      setStep("configure");
     }
-  }
+  };
 
   const handleSubmit = () => {
     if (selectedSensor && machineConfig.name && machineConfig.type) {
@@ -96,30 +113,32 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
         sensor: selectedSensor,
         description: machineConfig.description,
         createdAt: new Date().toISOString(),
-      }
+      };
 
-      onCreateMachine(newMachine)
+      onCreateMachine(newMachine);
 
       // Reset form
-      setStep("scanning")
-      setSensors([])
-      setSelectedSensor(null)
+      setStep("scanning");
+      setSensors([]);
+      setSelectedSensor(null);
       setMachineConfig({
         name: "",
         type: "",
         location: "",
         ampThreshold: "",
         description: "",
-      })
-      onOpenChange(false)
+      });
+      onOpenChange(false);
     }
-  }
+  };
 
   const getSignalIcon = (strength: number) => {
-    if (strength > 80) return <div className="w-3 h-3 bg-green-500 rounded-full" />
-    if (strength > 60) return <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-    return <div className="w-3 h-3 bg-red-500 rounded-full" />
-  }
+    if (strength > 80)
+      return <div className="w-3 h-3 bg-green-500 rounded-full" />;
+    if (strength > 60)
+      return <div className="w-3 h-3 bg-yellow-500 rounded-full" />;
+    return <div className="w-3 h-3 bg-red-500 rounded-full" />;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -131,7 +150,9 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
         {step === "scanning" && (
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <h3 className="text-lg font-semibold mb-2">Scanning WiFi Network</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Scanning WiFi Network
+            </h3>
             <p className="text-sm text-muted-foreground text-center">
               Searching for available sensors on the network...
             </p>
@@ -161,14 +182,24 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
                       {getSignalIcon(sensor.signalStrength)}
                       <div>
                         <p className="font-medium">{sensor.name}</p>
-                        <p className="text-sm text-muted-foreground">{sensor.type}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {sensor.type}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">{sensor.signalStrength}%</span>
-                      {sensor.status === "available" && <CheckCircle className="h-4 w-4 text-green-500" />}
-                      {sensor.status === "connected" && <Badge variant="secondary">In Use</Badge>}
-                      {sensor.status === "error" && <AlertCircle className="h-4 w-4 text-red-500" />}
+                      <span className="text-sm text-muted-foreground">
+                        {sensor.signalStrength}%
+                      </span>
+                      {sensor.status === "available" && (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      )}
+                      {sensor.status === "connected" && (
+                        <Badge variant="secondary">In Use</Badge>
+                      )}
+                      {sensor.status === "error" && (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -185,7 +216,9 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
             </div>
 
             <div className="p-3 bg-accent rounded-lg mb-4">
-              <p className="text-sm font-medium">Selected Sensor: {selectedSensor.name}</p>
+              <p className="text-sm font-medium">
+                Selected Sensor: {selectedSensor.name}
+              </p>
               <p className="text-xs text-muted-foreground">
                 {selectedSensor.type} • Signal: {selectedSensor.signalStrength}%
               </p>
@@ -198,7 +231,12 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
                   id="machine-name"
                   placeholder="e.g., Assembly Line 3"
                   value={machineConfig.name}
-                  onChange={(e) => setMachineConfig((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setMachineConfig((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                 />
               </div>
 
@@ -206,7 +244,9 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
                 <Label htmlFor="machine-type">Machine Type *</Label>
                 <Select
                   value={machineConfig.type}
-                  onValueChange={(value) => setMachineConfig((prev) => ({ ...prev, type: value }))}
+                  onValueChange={(value) =>
+                    setMachineConfig((prev) => ({ ...prev, type: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
@@ -228,18 +268,28 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
                   id="location"
                   placeholder="e.g., Floor 2, Section A"
                   value={machineConfig.location}
-                  onChange={(e) => setMachineConfig((prev) => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setMachineConfig((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amp-threshold">Amp Threshold</Label>
+                <Label htmlFor="amp-threshold">Machine Voltage</Label>
                 <Input
                   id="amp-threshold"
                   type="number"
                   placeholder="45"
                   value={machineConfig.ampThreshold}
-                  onChange={(e) => setMachineConfig((prev) => ({ ...prev, ampThreshold: e.target.value }))}
+                  onChange={(e) =>
+                    setMachineConfig((prev) => ({
+                      ...prev,
+                      ampThreshold: e.target.value,
+                    }))
+                  }
                 />
               </div>
             </div>
@@ -250,15 +300,28 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
                 id="description"
                 placeholder="Brief description of the machine's purpose"
                 value={machineConfig.description}
-                onChange={(e) => setMachineConfig((prev) => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setMachineConfig((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
               />
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={() => setStep("discovered")} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => setStep("discovered")}
+                className="flex-1"
+              >
                 Back to Sensors
               </Button>
-              <Button onClick={handleSubmit} disabled={!machineConfig.name || !machineConfig.type} className="flex-1">
+              <Button
+                onClick={handleSubmit}
+                disabled={!machineConfig.name || !machineConfig.type}
+                className="flex-1"
+              >
                 Create Assembly Line
               </Button>
             </div>
@@ -266,5 +329,5 @@ export default function AddAssemblyLineModal({ open, onOpenChange, onCreateMachi
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 import {
   BarChart2,
   Receipt,
@@ -60,37 +60,37 @@ import {
   DollarSign,
   TrendingDown,
   Puzzle,
-} from "lucide-react"
-import Link from "next/link"
-import { useState, useEffect } from "react"
-import { cn } from "@/lib/utils"
+} from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
-type MenuState = "full" | "collapsed" | "hidden"
+type MenuState = "full" | "collapsed" | "hidden";
 
 interface SubMenuItem {
-  id: string
-  label: string
-  href: string
-  icon?: React.ComponentType<any>
-  badge?: string
-  isNew?: boolean
-  children?: SubMenuItem[]
+  id: string;
+  label: string;
+  href: string;
+  icon?: React.ComponentType<any>;
+  badge?: string;
+  isNew?: boolean;
+  children?: SubMenuItem[];
 }
 
 interface MenuItem {
-  id: string
-  label: string
-  href?: string
-  icon: React.ComponentType<any>
-  badge?: string
-  isNew?: boolean
-  children?: SubMenuItem[]
+  id: string;
+  label: string;
+  href?: string;
+  icon: React.ComponentType<any>;
+  badge?: string;
+  isNew?: boolean;
+  children?: SubMenuItem[];
 }
 
 interface MenuSection {
-  id: string
-  label: string
-  items: MenuItem[]
+  id: string;
+  label: string;
+  items: MenuItem[];
 }
 
 const menuData: MenuSection[] = [
@@ -358,138 +358,149 @@ const menuData: MenuSection[] = [
       },
     ],
   },
-]
+];
 
 export default function Sidebar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [menuState, setMenuState] = useState<MenuState>("full")
-  const [isHovered, setIsHovered] = useState(false)
-  const [previousDesktopState, setPreviousDesktopState] = useState<MenuState>("full")
-  const [isMobile, setIsMobile] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [menuState, setMenuState] = useState<MenuState>("full");
+  const [isHovered, setIsHovered] = useState(false);
+  const [previousDesktopState, setPreviousDesktopState] =
+    useState<MenuState>("full");
+  const [isMobile, setIsMobile] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Cycle through menu states: full -> collapsed -> hidden -> full
   const toggleMenuState = () => {
     setMenuState((prev) => {
       switch (prev) {
         case "full":
-          return "collapsed"
+          return "collapsed";
         case "collapsed":
-          return "hidden"
+          return "hidden";
         case "hidden":
-          return "full"
+          return "full";
         default:
-          return "full"
+          return "full";
       }
-    })
-  }
+    });
+  };
 
   // Function to set menu state from theme customizer
   const setMenuStateFromCustomizer = (state: MenuState) => {
     if (!isMobile) {
-      setMenuState(state)
+      setMenuState(state);
     }
-  }
+  };
 
   // Handle responsive behavior
   useEffect(() => {
     const handleResize = () => {
-      const isDesktop = window.innerWidth >= 1024 // lg breakpoint
-      setIsMobile(!isDesktop)
+      const isDesktop = window.innerWidth >= 1024; // lg breakpoint
+      setIsMobile(!isDesktop);
 
       if (!isDesktop) {
         // On mobile/tablet, save current desktop state and set to hidden
         if (menuState !== "hidden") {
-          setPreviousDesktopState(menuState)
-          setMenuState("hidden")
+          setPreviousDesktopState(menuState);
+          setMenuState("hidden");
         }
       } else {
         // On desktop, restore previous state if coming from mobile
         if (menuState === "hidden" && previousDesktopState !== "hidden") {
-          setMenuState(previousDesktopState)
+          setMenuState(previousDesktopState);
         }
       }
-    }
+    };
 
     // Check on mount
-    handleResize()
+    handleResize();
 
     // Add event listener
-    window.addEventListener("resize", handleResize)
+    window.addEventListener("resize", handleResize);
 
-    return () => window.removeEventListener("resize", handleResize)
-  }, [menuState, previousDesktopState])
+    return () => window.removeEventListener("resize", handleResize);
+  }, [menuState, previousDesktopState]);
 
   // Export functions to window for TopNav and ThemeCustomizer to access
   useEffect(() => {
     if (typeof window !== "undefined") {
-      ; (window as any).toggleMenuState = toggleMenuState
-        ; (window as any).menuState = menuState
-        ; (window as any).isHovered = isHovered
-        ; (window as any).isMobile = isMobile
-        ; (window as any).setIsMobileMenuOpen = setIsMobileMenuOpen
-        ; (window as any).isMobileMenuOpen = isMobileMenuOpen
-        ; (window as any).setMenuStateFromCustomizer = setMenuStateFromCustomizer
+      (window as any).toggleMenuState = toggleMenuState;
+      (window as any).menuState = menuState;
+      (window as any).isHovered = isHovered;
+      (window as any).isMobile = isMobile;
+      (window as any).setIsMobileMenuOpen = setIsMobileMenuOpen;
+      (window as any).isMobileMenuOpen = isMobileMenuOpen;
+      (window as any).setMenuStateFromCustomizer = setMenuStateFromCustomizer;
     }
-  }, [menuState, isHovered, isMobile, isMobileMenuOpen])
+  }, [menuState, isHovered, isMobile, isMobileMenuOpen]);
 
   function handleNavigation() {
     if (isMobile) {
-      setIsMobileMenuOpen(false)
+      setIsMobileMenuOpen(false);
     }
   }
 
   const toggleExpanded = (itemId: string) => {
     setExpandedItems((prev) => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(itemId)) {
-        newSet.delete(itemId)
+        newSet.delete(itemId);
       } else {
-        newSet.add(itemId)
+        newSet.add(itemId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   function NavItem({
     item,
     level = 0,
     parentId = "",
   }: {
-    item: MenuItem | SubMenuItem
-    level?: number
-    parentId?: string
+    item: MenuItem | SubMenuItem;
+    level?: number;
+    parentId?: string;
   }) {
-    const itemId = `${parentId}-${item.id}`
-    const isExpanded = expandedItems.has(itemId)
-    const hasChildren = item.children && item.children.length > 0
-    const showText = menuState === "full" || (menuState === "collapsed" && isHovered) || (isMobile && isMobileMenuOpen)
-    const showExpandIcon = hasChildren && showText
+    const itemId = `${parentId}-${item.id}`;
+    const isExpanded = expandedItems.has(itemId);
+    const hasChildren = item.children && item.children.length > 0;
+    const showText =
+      menuState === "full" ||
+      (menuState === "collapsed" && isHovered) ||
+      (isMobile && isMobileMenuOpen);
+    const showExpandIcon = hasChildren && showText;
 
-    const paddingLeft = level === 0 ? "px-3" : level === 1 ? "pl-8 pr-3" : "pl-12 pr-3"
+    const paddingLeft =
+      level === 0 ? "px-3" : level === 1 ? "pl-8 pr-3" : "pl-12 pr-3";
 
     const content = (
       <div
         className={cn(
           "flex items-center py-2 text-sm rounded-md transition-colors sidebar-menu-item hover:bg-gray-50 dark:hover:bg-[#1F1F23] relative group cursor-pointer",
-          paddingLeft,
+          paddingLeft
         )}
         onClick={() => {
           if (hasChildren) {
-            toggleExpanded(itemId)
+            toggleExpanded(itemId);
           } else if (item.href) {
             // Navigate to the href
-            window.location.href = item.href
-            handleNavigation()
+            window.location.href = item.href;
+            handleNavigation();
           }
         }}
-        title={menuState === "collapsed" && !isHovered && !isMobile ? item.label : undefined}
+        title={
+          menuState === "collapsed" && !isHovered && !isMobile
+            ? item.label
+            : undefined
+        }
       >
         <item.icon className="h-4 w-4 flex-shrink-0 sidebar-menu-icon" />
 
         {showText && (
           <>
-            <span className="ml-3 flex-1 transition-opacity duration-200 sidebar-menu-text">{item.label}</span>
+            <span className="ml-3 flex-1 transition-opacity duration-200 sidebar-menu-text">
+              {item.label}
+            </span>
 
             {/* Badges and indicators */}
             <div className="flex items-center space-x-1">
@@ -505,7 +516,10 @@ export default function Sidebar() {
               )}
               {showExpandIcon && (
                 <ChevronDown
-                  className={cn("h-3 w-3 transition-transform duration-200", isExpanded ? "rotate-180" : "rotate-0")}
+                  className={cn(
+                    "h-3 w-3 transition-transform duration-200",
+                    isExpanded ? "rotate-180" : "rotate-0"
+                  )}
                 />
               )}
             </div>
@@ -516,39 +530,53 @@ export default function Sidebar() {
         {menuState === "collapsed" && !isHovered && !isMobile && (
           <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
             {item.label}
-            {item.badge && <span className="ml-1 text-blue-300">({item.badge})</span>}
+            {item.badge && (
+              <span className="ml-1 text-blue-300">({item.badge})</span>
+            )}
           </div>
         )}
       </div>
-    )
+    );
 
     return (
       <div>
-        {item.href && !hasChildren ? <Link href={item.href}>{content}</Link> : content}
+        {item.href && !hasChildren ? (
+          <Link href={item.href}>{content}</Link>
+        ) : (
+          content
+        )}
         {hasChildren && isExpanded && showText && (
           <div className="mt-1 space-y-1">
             {item.children!.map((child) => (
-              <NavItem key={child.id} item={child} level={level + 1} parentId={itemId} />
+              <NavItem
+                key={child.id}
+                item={child}
+                level={level + 1}
+                parentId={itemId}
+              />
             ))}
           </div>
         )}
       </div>
-    )
+    );
   }
 
   // Calculate sidebar width - expand when collapsed and hovered, or full width on mobile
   const getSidebarWidth = () => {
     if (isMobile) {
-      return "w-64" // Always full width on mobile
+      return "w-64"; // Always full width on mobile
     }
     if (menuState === "collapsed" && isHovered) {
-      return "w-64" // Expand to full width when hovered
+      return "w-64"; // Expand to full width when hovered
     }
-    return menuState === "collapsed" ? "w-16" : "w-64"
-  }
+    return menuState === "collapsed" ? "w-16" : "w-64";
+  };
 
   // Show text if menu is full OR if collapsed and hovered OR on mobile
-  const showText = menuState === "full" || (menuState === "collapsed" && isHovered) || (isMobile && isMobileMenuOpen)
+  const showText =
+    menuState === "full" ||
+    (menuState === "collapsed" && isHovered) ||
+    (isMobile && isMobileMenuOpen);
 
   // On mobile, show sidebar as overlay when isMobileMenuOpen is true
   if (isMobile) {
@@ -567,20 +595,20 @@ export default function Sidebar() {
             {/* Header */}
             <div className="h-16 px-3 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
               <Link
-                href="https://cmsfullform.com/"
+                href="https://ct-twin-demo.vercel.app/dashboard-cms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 w-full"
               >
                 <img
-                  src="https://cmsfullform.com/themes/cmsfullform/Backend/Assets/favicon/apple-icon-60x60.png"
+                  src="/placeholder-logo.png"
                   alt="CMSFullForm"
                   width={32}
                   height={32}
                   className="flex-shrink-0"
                 />
                 <span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
-                  CMSFullForm
+                  amply
                 </span>
               </Link>
             </div>
@@ -600,7 +628,11 @@ export default function Sidebar() {
                     </div>
                     <div className="space-y-1">
                       {section.items.map((item) => (
-                        <NavItem key={item.id} item={item} parentId={section.id} />
+                        <NavItem
+                          key={item.id}
+                          item={item}
+                          parentId={section.id}
+                        />
                       ))}
                     </div>
                   </div>
@@ -610,8 +642,22 @@ export default function Sidebar() {
 
             <div className="px-2 py-4 border-t border-gray-200 dark:border-[#1F1F23]">
               <div className="space-y-1">
-                <NavItem item={{ id: "settings", label: "Settings", href: "/settings", icon: Settings }} />
-                <NavItem item={{ id: "help", label: "Help", href: "/help", icon: HelpCircle }} />
+                <NavItem
+                  item={{
+                    id: "settings",
+                    label: "Settings",
+                    href: "/settings",
+                    icon: Settings,
+                  }}
+                />
+                <NavItem
+                  item={{
+                    id: "help",
+                    label: "Help",
+                    href: "/help",
+                    icon: HelpCircle,
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -619,10 +665,13 @@ export default function Sidebar() {
 
         {/* Mobile overlay backdrop */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-[65]" onClick={() => setIsMobileMenuOpen(false)} />
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-[65]"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
         )}
       </>
-    )
+    );
   }
 
   // Desktop sidebar
@@ -645,7 +694,7 @@ export default function Sidebar() {
           <div className="h-16 px-3 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
             {showText ? (
               <Link
-                href="https://cmsfullform.com/"
+                href="https://ct-twin-demo.vercel.app/dashboard-cms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 w-full"
@@ -653,7 +702,7 @@ export default function Sidebar() {
                 <img
                   src="/placeholder-logo.png"
                   alt="CMSFullForm"
-                  className="w-full h-full object-contain p-5"
+                  className="w-full h-full object-contain p-8"
                 />
               </Link>
             ) : (
@@ -684,7 +733,11 @@ export default function Sidebar() {
                   )}
                   <div className="space-y-1">
                     {section.items.map((item) => (
-                      <NavItem key={item.id} item={item} parentId={section.id} />
+                      <NavItem
+                        key={item.id}
+                        item={item}
+                        parentId={section.id}
+                      />
                     ))}
                   </div>
                 </div>
@@ -694,12 +747,26 @@ export default function Sidebar() {
 
           <div className="px-2 py-4 border-t border-gray-200 dark:border-[#1F1F23]">
             <div className="space-y-1">
-              <NavItem item={{ id: "settings", label: "Settings", href: "/settings", icon: Settings }} />
-              <NavItem item={{ id: "help", label: "Help", href: "/help", icon: HelpCircle }} />
+              <NavItem
+                item={{
+                  id: "settings",
+                  label: "Settings",
+                  href: "/settings",
+                  icon: Settings,
+                }}
+              />
+              <NavItem
+                item={{
+                  id: "help",
+                  label: "Help",
+                  href: "/help",
+                  icon: HelpCircle,
+                }}
+              />
             </div>
           </div>
         </div>
       )}
     </nav>
-  )
+  );
 }
