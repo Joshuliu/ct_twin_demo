@@ -1,31 +1,38 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeCustomizer } from "@/components/theme-customizer"
+// app/layout.tsx
+import "./globals.css";
+import type { ReactNode } from "react";
+import { ThemeProvider } from "next-themes"; // if not installed, skip this block
 
-const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "CMSFullForm Dashboard - OpenSource CMS",
-  description: "CmsFullForm dashboard build with Next.js and Tailwind CSS",
-    generator: 'v0.app'
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* pre-hydration guard: if any saved theme exists, prefer dark */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var k='theme';
+                var v=localStorage.getItem(k);
+                if(!v || v==='dark') document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+              } catch(_) {}
+            `,
+          }}
+        />
+      </head>
+      <body>
+        {/* If you use next-themes, configure it to stop flipping to light */}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          storageKey="theme"
+        >
           {children}
-          <ThemeCustomizer />
         </ThemeProvider>
+        {/* If you DON'T use next-themes, you can remove ThemeProvider entirely */}
       </body>
     </html>
-  )
+  );
 }

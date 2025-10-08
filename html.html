@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ESP32 Current Sensor Reader</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+    .current-display { font-size: 6rem; line-height: 1; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+  <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-xl">
+    <h1 class="text-2xl font-bold mb-2 text-cyan-400">Live Current Monitor</h1>
+    <p id="status" class="text-gray-400 mb-4">Click connect to pair with your ESP32 over Web Bluetooth.</p>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-gray-900 rounded-lg p-6 text-center">
+        <div class="current-display font-bold text-gray-200">
+          <span id="current-value">0.00</span><span class="text-4xl text-gray-500 ml-2">A</span>
+        </div>
+      </div>
+      <div class="bg-gray-900 rounded-lg p-4">
+        <div class="text-sm text-gray-400">Device</div>
+        <div id="dev-name" class="font-semibold">—</div>
+        <div class="mt-2 text-sm text-gray-400">Service</div>
+        <div id="svc-id" class="mono break-all text-xs">—</div>
+        <div class="mt-2 text-sm text-gray-400">Characteristic</div>
+        <div id="chr-id" class="mono break-all text-xs">—</div>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button id="connect-button"
+              class="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300">
+        Connect to Sensor
+      </button>
+      <button id="disconnect-button"
+              class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg"
+              disabled>
+        Disconnect
+      </button>
+    </div>
+
+    <pre id="log" class="mt-4 bg-gray-900 p-3 rounded text-xs mono max-h-56 overflow-auto"></pre>
+    <p id="error-log" class="text-red-400 mt-3 text-sm h-4"></p>
+  </div>
+
+  <script>
+    // === CONFIG: match these with your ESP32 sketch ===
+    const SERVICE_UUID        = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    const CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+    // === UI Refs ===
+    const btnConnect = document.getElementById('connect-button');
+    const btnDisconnect = document.getElementById('disconnect-button');
+    const statusDisplay = document.getElementById('status');
+    const currentValueDisplay = document.getElementById('current-value');
+    const errorLog = document.getElementById('error-log');
+    const devNameEl = document.getElementById('dev-name');
+    const svcIdEl = document.getElementById('svc-id');
+    const chrIdEl = document.getElementById('chr-id');
+    const logEl = document.getElementById('log');
+
+    let device = null;
+    let server = null;
+    let characteristic = null;
+    let pollTimer = null;
+
+    function log(...args) {
+      console.log(...args);
+      logEl.textContent += args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n';
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setStatus(msg) { statusDisplay.textContent = msg; }
+    function setError(msg) { errorLog.textContent = msg || ''; if (msg) log('Error:', msg); }
+    function secureCheck() {
+      if (!window.isSecureContext) {
+        setError('This page must be served from http://localhost or HTTPS for Web Bluetooth.');
+      }
+    }
+
+    async function requestDevice() {
+      // permissive discovery: many devices don't include service UUIDs in adv packets
+      return navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [SERVICE_UUID]
+      });
+    }
+
+    async function debugDump(gattServer) {
+      log('--- GATT dump start ---');
+      const services = await gattServer.getPrimaryServices();
+      for (const s of services) {
+        log('Service', s.uuid);
+        const chars = await s.getCharacteristics();
+        for (const c of chars) {
+          log('  Char', c.uuid, c.properties);
+          // list descriptors too (optional)
+          try {
+            const descs = await c.getDescriptors();
+            for (const d of descs) log('    Desc', d.uuid);
+          } catch {}
+        }
+      }
+      log('--- GATT dump end ---');
+    }
+
+    function handleValue(dataview) {
+      let amps;
+      // Try little-endian Float32 (ESP32 default), else fall back to UTF-8 text float
+      try {
+        amps = dataview.getFloat32(0, true);
+      } catch {
+        try {
+          amps = parseFloat(new TextDecoder().decode(dataview));
+        } catch {}
+      }
+      if (Number.isFinite(amps)) {
+        currentValueDisplay.textContent = amps.toFixed(2);
+      }
+    }
+
+    async function connectFlow() {
+      setError('');
+      setStatus('Requesting device…');
+      device = await requestDevice();
+      devNameEl.textContent = device.name || '(unnamed device)';
+      device.addEventListener('gattserverdisconnected', onDisconnected);
+
+      setStatus('Connecting…');
+      server = await device.gatt.connect();
+
+      await debugDump(server); // show what the device actually exposes
+
+      setStatus('Getting primary service…');
+      const service = await server.getPrimaryService(SERVICE_UUID);
+      svcIdEl.textContent = service.uuid;
+
+      setStatus('Getting characteristic…');
+      characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+      chrIdEl.textContent = characteristic.uuid;
+
+      // prefer notifications if supported, otherwise poll
+      if (characteristic.properties.notify || characteristic.properties.indicate) {
+        setStatus('Starting notifications…');
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', e => handleValue(e.target.value));
+        setStatus('Connected! Listening for updates…');
+      } else {
+        setStatus('No notify/indicate; polling every 500ms…');
+        pollTimer = setInterval(async () => {
+          try {
+            const v = await characteristic.readValue();
+            handleValue(v);
+          } catch (e) { setError(e.message); }
+        }, 500);
+      }
+
+      btnConnect.disabled = true;
+      btnConnect.classList.replace('bg-cyan-500', 'bg-gray-600');
+      btnConnect.classList.replace('hover:bg-cyan-600', 'cursor-not-allowed');
+      btnConnect.textContent = 'Connected';
+      btnDisconnect.disabled = false;
+    }
+
+    function onDisconnected() {
+      setStatus('Device disconnected.');
+      cleanup();
+    }
+
+    function cleanup() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      characteristic?.removeEventListener('characteristicvaluechanged', handleValue);
+      characteristic = null;
+      server = null;
+      device = null;
+      btnConnect.disabled = false;
+      btnConnect.textContent = 'Connect to Sensor';
+      btnConnect.classList.replace('bg-gray-600', 'bg-cyan-500');
+      btnConnect.classList.replace('cursor-not-allowed', 'hover:bg-cyan-600');
+      btnDisconnect.disabled = true;
+      devNameEl.textContent = '—';
+      svcIdEl.textContent = '—';
+      chrIdEl.textContent = '—';
+      currentValueDisplay.textContent = '0.00';
+    }
+
+    btnConnect.addEventListener('click', async () => {
+      try { await connectFlow(); }
+      catch (err) {
+        setStatus('Connection failed. Check the log and try again.');
+        setError(err.message);
+      }
+    });
+
+    btnDisconnect.addEventListener('click', async () => {
+      try { await device?.gatt?.disconnect(); } catch {}
+      cleanup();
+    });
+
+    // init
+    secureCheck();
+  </script>
+</body>
+</html>

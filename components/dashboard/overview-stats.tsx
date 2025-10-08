@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package } from "lucide-react"
+import { FileText, Eye, MessageSquare, Users, TrendingUp, TrendingDown, Calendar, ImageIcon } from "lucide-react"
 
 interface StatCard {
   title: string
@@ -10,53 +10,70 @@ interface StatCard {
   change: string
   changeType: "increase" | "decrease"
   icon: React.ReactNode
+  description: string
 }
 
 const stats: StatCard[] = [
   {
-    title: "Total Revenue",
-    value: "$45,231.89",
-    change: "+20.1%",
+    title: "Total Articles",
+    value: "1,247",
+    change: "+12.5%",
     changeType: "increase",
-    icon: <DollarSign className="h-4 w-4" />,
+    icon: <FileText className="h-4 w-4" />,
+    description: "Published articles",
   },
   {
-    title: "Orders",
-    value: "2,350",
-    change: "+180.1%",
+    title: "Page Views",
+    value: "89.2K",
+    change: "+23.1%",
     changeType: "increase",
-    icon: <ShoppingCart className="h-4 w-4" />,
+    icon: <Eye className="h-4 w-4" />,
+    description: "This month",
   },
   {
-    title: "Customers",
-    value: "12,234",
-    change: "+19%",
+    title: "Comments",
+    value: "2,847",
+    change: "+8.2%",
     changeType: "increase",
-    icon: <Users className="h-4 w-4" />,
+    icon: <MessageSquare className="h-4 w-4" />,
+    description: "User engagement",
   },
   {
-    title: "Products",
-    value: "573",
-    change: "-4.3%",
+    title: "Authors",
+    value: "24",
+    change: "-2.1%",
     changeType: "decrease",
-    icon: <Package className="h-4 w-4" />,
+    icon: <Users className="h-4 w-4" />,
+    description: "Active writers",
+  },
+  {
+    title: "Scheduled Posts",
+    value: "18",
+    change: "+5.3%",
+    changeType: "increase",
+    icon: <Calendar className="h-4 w-4" />,
+    description: "Upcoming content",
+  },
+  {
+    title: "Media Files",
+    value: "3,456",
+    change: "+15.7%",
+    changeType: "increase",
+    icon: <ImageIcon className="h-4 w-4" />,
+    description: "Images & videos",
   },
 ]
 
 export default function OverviewStats() {
   return (
-    <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {stats.map((stat) => (
         <div
           key={stat.title}
-          className="bg-white dark:bg-[#0F0F12] rounded-lg sm:rounded-xl p-3 sm:p-6 border border-gray-200 dark:border-[#1F1F23] hover:shadow-md transition-shadow"
+          className="bg-white dark:bg-[#0F0F12] rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-[#1F1F23] hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between space-y-0 pb-2">
-            <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">{stat.title}</h3>
             <div className="text-gray-600 dark:text-gray-400 flex-shrink-0">{stat.icon}</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{stat.value}</div>
             <div className="flex items-center text-xs">
               {stat.changeType === "increase" ? (
                 <TrendingUp className="h-3 w-3 text-green-500 mr-1 flex-shrink-0" />
@@ -66,8 +83,13 @@ export default function OverviewStats() {
               <span className={`font-medium ${stat.changeType === "increase" ? "text-green-600" : "text-red-600"}`}>
                 {stat.change}
               </span>
-              <span className="text-gray-500 dark:text-gray-400 ml-1 hidden sm:inline">from last month</span>
-              <span className="text-gray-500 dark:text-gray-400 ml-1 sm:hidden">vs last</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+            <div className="space-y-0.5">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{stat.title}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{stat.description}</p>
             </div>
           </div>
         </div>

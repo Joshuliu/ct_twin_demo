@@ -595,13 +595,13 @@ export default function Sidebar() {
             {/* Header */}
             <div className="h-16 px-3 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
               <Link
-                href="https://ct-twin-demo.vercel.app/dashboard-cms"
+                href="https://ct-twin-demo.vercel.app/dashboard"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 w-full"
               >
                 <img
-                  src="/placeholder-logo.png"
+                  src="/amply-logo.png"
                   alt="CMSFullForm"
                   width={32}
                   height={32}
@@ -694,23 +694,23 @@ export default function Sidebar() {
           <div className="h-16 px-3 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
             {showText ? (
               <Link
-                href="https://ct-twin-demo.vercel.app/dashboard-cms"
+                href="https://ct-twin-demo.vercel.app/dashboard"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 w-full"
+                className="flex items-center gap-3 w-full p-8"
               >
                 <img
-                  src="/placeholder-logo.png"
+                  src="/amply-logo.png"
                   alt="CMSFullForm"
-                  className="w-full h-full object-contain p-8"
+                  className="w-full h-full object-contain p-4"
                 />
               </Link>
             ) : (
-              <div className="flex justify-center items-center w-full h-full">
+              <div className="flex justify-center items-center w-full h-full p-8">
                 <img
-                  src="/placeholder-logo.png"
+                  src="/amply-logo.png"
                   alt="CMSFullForm"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover p-4"
                 />
               </div>
             )}
